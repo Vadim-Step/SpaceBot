@@ -16,7 +16,7 @@ def main():
     asked = False
     greet = False
     asked_type = False
-    in_menu = False
+    in_menu = True
     showing_place = False
     playing_cities = False
     for event in longpoll.listen():
@@ -27,10 +27,6 @@ def main():
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  random_id=random.randint(0, 2 ** 64),
                                  message=f'Приветствую тебя, {response[0]["first_name"]}')
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 random_id=random.randint(0, 2 ** 64),
-                                 keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
-                                 message=f'Я SpaceBot и у меня есть множество функций. Их всех ты сейчас видишь на клавиатуре.')
                 greet = True
             if event.message.text.lower() == 'выйти':
                 showing_place = False
@@ -94,40 +90,51 @@ def main():
                 if event.message.text == 'Игра в города':
                     city_last = None
                     playing_cities = True
-                    in_menu = False
+                    started = False
+                    played_cities = []
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message='Начинайте!',
                                      keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                                      random_id=random.randint(0, 2 ** 64))
-
-                if event.message.text in cities:
-                    if not city_last:
+                if event.message.text in cities and event.message.text not in played_cities:
+                    if not city_last or city_last[-1] == event.message.text.lower()[0]:
+                        played_cities.append(event.message.text)
                         last = event.message.text[-1]
+                        count = -1
+                        while last == 'ы' or last == 'ь' or last == 'ъ':
+                            count -= 1
+                            last = event.message.text[count]
                         for i in cities:
-                            if i.startswith(last):
+                            if i.startswith(last.upper()) and i not in played_cities:
                                 vk.messages.send(user_id=event.obj.message['from_id'],
                                                  message=i,
-                                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                                 keyboard=open('kb3.json', 'r',
+                                                               encoding='UTF-8').read(),
                                                  random_id=random.randint(0, 2 ** 64))
                                 city_last = i
+                                played_cities.append(city_last)
+                                count = 0
+                                while city_last[-1] == 'ы' or city_last[-1] == 'ь' or city_last[-1] == 'ъ':
+                                    count -= 1
+                                    city_last = city_last[0:count]
                                 break
+
                     else:
-                        if city_last[-1] == event.message.text.lower()[0]:
-                            last = event.message.text[-1]
-                            for i in cities:
-                                if i.startswith(last):
-                                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                                     message=i,
-                                                     keyboard=open('kb3.json', 'r',
-                                                                   encoding='UTF-8').read(),
-                                                     random_id=random.randint(0, 2 ** 64))
-                                    city_last = i
-                                    break
-                elif event.message.text not in cities and city_last:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message='Не то!',
+                                         keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                         random_id=random.randint(0, 2 ** 64))
+                elif event.message.text not in cities and not in_menu:
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message='Нет такого города!',
                                      keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                                      random_id=random.randint(0, 2 ** 64))
+                elif event.message.text in played_cities:
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message='Был такой город!',
+                                     keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                     random_id=random.randint(0, 2 ** 64))
+                in_menu = False
 
             if in_menu:
                 vk.messages.send(user_id=event.obj.message['from_id'],
