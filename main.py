@@ -90,12 +90,45 @@ def main():
                                          keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
                                          random_id=random.randint(0, 2 ** 64))
             if event.message.text == 'Игра в города' or playing_cities:
-                playing_cities = True
-                in_menu = False
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message='Функция в разработке...',
-                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
-                                 random_id=random.randint(0, 2 ** 64))
+                cities = open('cities.txt').read().split('\n')
+                if event.message.text == 'Игра в города':
+                    city_last = None
+                    playing_cities = True
+                    in_menu = False
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message='Начинайте!',
+                                     keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                     random_id=random.randint(0, 2 ** 64))
+
+                if event.message.text in cities:
+                    if not city_last:
+                        last = event.message.text[-1]
+                        for i in cities:
+                            if i.startswith(last):
+                                vk.messages.send(user_id=event.obj.message['from_id'],
+                                                 message=i,
+                                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                                 random_id=random.randint(0, 2 ** 64))
+                                city_last = i
+                                break
+                    else:
+                        if city_last[-1] == event.message.text.lower()[0]:
+                            last = event.message.text[-1]
+                            for i in cities:
+                                if i.startswith(last):
+                                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                                     message=i,
+                                                     keyboard=open('kb3.json', 'r',
+                                                                   encoding='UTF-8').read(),
+                                                     random_id=random.randint(0, 2 ** 64))
+                                    city_last = i
+                                    break
+                elif event.message.text not in cities and city_last:
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message='Нет такого города!',
+                                     keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                     random_id=random.randint(0, 2 ** 64))
+
             if in_menu:
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  random_id=random.randint(0, 2 ** 64),
