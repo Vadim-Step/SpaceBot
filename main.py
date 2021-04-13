@@ -104,20 +104,22 @@ def main():
                         while last == 'ы' or last == 'ь' or last == 'ъ':
                             count -= 1
                             last = event.message.text[count]
+                        letter_cities = []
                         for i in cities:
                             if i.startswith(last.upper()) and i not in played_cities:
-                                vk.messages.send(user_id=event.obj.message['from_id'],
-                                                 message=i,
-                                                 keyboard=open('kb3.json', 'r',
-                                                               encoding='UTF-8').read(),
-                                                 random_id=random.randint(0, 2 ** 64))
-                                city_last = i
-                                played_cities.append(city_last)
-                                count = 0
-                                while city_last[-1] == 'ы' or city_last[-1] == 'ь' or city_last[-1] == 'ъ':
-                                    count -= 1
-                                    city_last = city_last[0:count]
-                                break
+                                letter_cities.append(i)
+                        city_rand = random.choice(letter_cities)
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=city_rand,
+                                         keyboard=open('kb3.json', 'r',
+                                                       encoding='UTF-8').read(),
+                                         random_id=random.randint(0, 2 ** 64))
+                        city_last = city_rand
+                        played_cities.append(city_last)
+                        count = 0
+                        while city_last[-1] == 'ы' or city_last[-1] == 'ь' or city_last[-1] == 'ъ':
+                            count -= 1
+                            city_last = city_last[0:count]
 
                     else:
                         vk.messages.send(user_id=event.obj.message['from_id'],
