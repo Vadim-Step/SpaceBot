@@ -6,7 +6,7 @@
         "action": {
           "type": "text",
           "payload": "{\"button\": \"1\"}",
-          "label": "Покажи место"
+          "label": "Прямое геокодирование"
         },
         "color": "positive"
       },
@@ -14,17 +14,17 @@
         "action": {
           "type": "text",
           "payload": "{\"button\": \"2\"}",
-          "label": "Игра в города"
+          "label": "Обратное геокодирование"
         },
         "color": "positive"
       },
       {
         "action": {
           "type": "text",
-          "payload": "{\"button\": \"2\"}",
-          "label": "Геокодер"
+          "payload": "{\"button\": \"1\"}",
+          "label": "Выйти"
         },
-        "color": "positive"
+        "color": "negative"
       }
     ]
   ]

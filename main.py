@@ -14,11 +14,13 @@ def main():
     longpoll = VkBotLongPoll(vk_session, '203395569')
     city = None
     asked = False
+    asked1 = False
     greet = False
     asked_type = False
     in_menu = True
     showing_place = False
     playing_cities = False
+    geocoding = False
     for event in longpoll.listen():
         vk = vk_session.get_api()
         if event.type == VkBotEventType.MESSAGE_NEW:
@@ -137,6 +139,50 @@ def main():
                                      keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                                      random_id=random.randint(0, 2 ** 64))
                 in_menu = False
+            if event.message.text == 'Геокодер' or geocoding:
+                if event.message.text == 'Геокодер':
+                    geocoding = False
+                    in_menu = False
+                    asked1 = False
+                if asked1 == 'Прямое геокодирование':
+                    geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
+                    response = requests.get(geocoder_request)
+                    print('ffg')
+                    if response:
+                        print('ff')
+                        json_response = response.json()
+                        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                            "GeoObject"]
+                        toponym_coodrinates = toponym["Point"]["pos"]
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=f'Координаты - {toponym_coodrinates}. Что-то ещё?',
+                                         keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
+                                         random_id=random.randint(0, 2 ** 64))
+                elif asked1 == 'Обратное геокодирование':
+                    geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
+                    response = requests.get(geocoder_request)
+                    if response:
+                        pass
+                else:
+                    if event.message.text and not geocoding:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message='Геокодирование:',
+                                         keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
+                                         random_id=random.randint(0, 2 ** 64))
+                        geocoding = True
+                        asked1 = True
+                    elif asked1 or geocoding:
+                        asked1 = event.message.text
+                        if asked1 == 'Прямое геокодирование':
+                            vk.messages.send(user_id=event.obj.message['from_id'],
+                                             message='Введите место:',
+                                             keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                             random_id=random.randint(0, 2 ** 64))
+                        else:
+                            vk.messages.send(user_id=event.obj.message['from_id'],
+                                             message='Введите координаты:',
+                                             keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                             random_id=random.randint(0, 2 ** 64))
 
             if in_menu:
                 vk.messages.send(user_id=event.obj.message['from_id'],
