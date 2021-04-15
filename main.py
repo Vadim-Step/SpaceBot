@@ -18,6 +18,8 @@ def main():
     greet = False
     asked_type = False
     in_menu = True
+    asked2 = False
+    guessing_city = False
     showing_place = False
     playing_cities = False
     geocoding = False
@@ -34,17 +36,17 @@ def main():
                 showing_place = False
                 playing_cities = False
                 geocoding = False
+                guessing_city = False
                 in_menu = True
                 city = None
                 asked = False
+                asked2 = False
                 asked_type = False
-                print('yep')
             # навыки:
             if event.message.text == 'Покажи место' or showing_place:
                 if event.message.text == 'Покажи место':
                     showing_place = True
                     in_menu = False
-                print(event.message.text, showing_place)
                 if asked:
                     city = event.message.text
                 if city and asked_type:
@@ -148,9 +150,7 @@ def main():
                 if asked1 == 'Прямое геокодирование':
                     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
                     response = requests.get(geocoder_request)
-                    print('ffg')
                     if response:
-                        print('ff')
                         json_response = response.json()
                         toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
                             "GeoObject"]
@@ -192,7 +192,55 @@ def main():
                                              message='Введите координаты, например 30 60:',
                                              keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                                              random_id=random.randint(0, 2 ** 64))
-
+            if event.message.text == 'Угадай город' or guessing_city:
+                if event.message.text == 'Угадай город':
+                    guessing_city = True
+                    in_menu = False
+                    asked2 = False
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message='Игра "Угадай город". Ваша задача по картинке угадать город.',
+                                     keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                     random_id=random.randint(0, 2 ** 64))
+                cities = open('cities2.txt', encoding='UTF-8').read().split('\n')
+                if asked2:
+                    if event.message.text == city_rand2:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         random_id=random.randint(0, 2 ** 64),
+                                         message=f'Правильно!',
+                                         keyboard=open('kb3.json', 'r', encoding='UTF-8').read())
+                    else:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         random_id=random.randint(0, 2 ** 64),
+                                         message=f'Неправильно! Это же {city_rand2}',
+                                         keyboard=open('kb3.json', 'r', encoding='UTF-8').read())
+                    asked2 = False
+                if not asked2:
+                    city_rand2 = random.choice(cities)
+                    print(city_rand2)
+                    geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={city_rand2}&format=json"
+                    response = requests.get(geocoder_request)
+                    if response:
+                        json_response = response.json()
+                        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                            "GeoObject"]
+                        toponym_coodrinates = toponym["Point"]["pos"]
+                        map_request = f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}&spn=0.005,0.005&l=map"
+                        response = requests.get(map_request)
+                        map_file = "static/map.png"
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        upload = vk_api.VkUpload(vk)
+                        photo = upload.photo_messages('static/map.png')
+                        owner_id = photo[0]['owner_id']
+                        photo_id = photo[0]['id']
+                        access_key = photo[0]['access_key']
+                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         random_id=random.randint(0, 2 ** 64),
+                                         message=f'Какой это город?',
+                                         keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                         attachment=attachment)
+                        asked2 = True
             if in_menu:
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  random_id=random.randint(0, 2 ** 64),
