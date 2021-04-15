@@ -33,6 +33,7 @@ def main():
             if event.message.text.lower() == 'выйти':
                 showing_place = False
                 playing_cities = False
+                geocoding = False
                 in_menu = True
                 city = None
                 asked = False
@@ -158,11 +159,19 @@ def main():
                                          message=f'Координаты - {toponym_coodrinates}. Что-то ещё?',
                                          keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
                                          random_id=random.randint(0, 2 ** 64))
+                        asked1 = False
                 elif asked1 == 'Обратное геокодирование':
                     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
                     response = requests.get(geocoder_request)
                     if response:
-                        pass
+                        json_response = response.json()
+                        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                            "GeoObject"]
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=f'Мето - {toponym["metaDataProperty"]["GeocoderMetaData"]["text"]}. Что-то ещё?',
+                                         keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
+                                         random_id=random.randint(0, 2 ** 64))
+                        asked1 = False
                 else:
                     if event.message.text and not geocoding:
                         vk.messages.send(user_id=event.obj.message['from_id'],
@@ -180,7 +189,7 @@ def main():
                                              random_id=random.randint(0, 2 ** 64))
                         else:
                             vk.messages.send(user_id=event.obj.message['from_id'],
-                                             message='Введите координаты:',
+                                             message='Введите координаты, например 30 60:',
                                              keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                                              random_id=random.randint(0, 2 ** 64))
 
