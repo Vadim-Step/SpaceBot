@@ -35,6 +35,14 @@
           "label": "Угадай город"
         },
         "color": "positive"
+      },
+      {
+        "action": {
+          "type": "text",
+          "payload": "{\"button\": \"2\"}",
+          "label": "Расстояния"
+        },
+        "color": "positive"
       }
     ]
   ]
