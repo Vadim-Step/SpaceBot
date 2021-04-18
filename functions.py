@@ -14,29 +14,38 @@ def func_sp(event, asked, asked_type, city, vk, showing_place, in_menu):
         geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={city}&format=json"
         response = requests.get(geocoder_request)
         if response:
-            json_response = response.json()
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
-                "GeoObject"]
-            toponym_coodrinates = toponym["Point"]["pos"]
-            map_request = f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}&spn=0.1,0.1&l={event.message.text}"
-            response = requests.get(map_request)
-            map_file = "static/map.png"
-            with open(map_file, "wb") as file:
-                file.write(response.content)
-            upload = vk_api.VkUpload(vk)
-            photo = upload.photo_messages('static/map.png')
-            owner_id = photo[0]['owner_id']
-            photo_id = photo[0]['id']
-            access_key = photo[0]['access_key']
-            attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-            vk.messages.send(user_id=event.obj.message['from_id'],
-                             random_id=random.randint(0, 2 ** 64),
-                             message=f'Это {city}. Что вы ещё хотите увидеть?',
-                             keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
-                             attachment=attachment)
-            city = True
-            asked_type = False
-            return showing_place, asked, asked_type, city, in_menu
+            try:
+                json_response = response.json()
+                toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                    "GeoObject"]
+                toponym_coodrinates = toponym["Point"]["pos"]
+                map_request = f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}&spn=0.1,0.1&l={event.message.text}"
+                response = requests.get(map_request)
+                map_file = "static/map.png"
+                with open(map_file, "wb") as file:
+                    file.write(response.content)
+                upload = vk_api.VkUpload(vk)
+                photo = upload.photo_messages('static/map.png')
+                owner_id = photo[0]['owner_id']
+                photo_id = photo[0]['id']
+                access_key = photo[0]['access_key']
+                attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 random_id=random.randint(0, 2 ** 64),
+                                 message=f'Это {city}. Что вы ещё хотите увидеть?',
+                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                 attachment=attachment)
+                city = True
+                asked_type = False
+                return showing_place, asked, asked_type, city, in_menu
+            except Exception:
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 random_id=random.randint(0, 2 ** 64),
+                                 message=f'Ничего не нашлось, попробуйте ещё раз.',
+                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read())
+                city = True
+                asked_type = False
+                return showing_place, asked, asked_type, city, in_menu
     else:
         if event.message.text and not city:
             vk.messages.send(user_id=event.obj.message['from_id'],
@@ -117,29 +126,43 @@ def func_gc(event, asked1, vk, geocoding, in_menu):
         in_menu = False
         asked1 = False
     if asked1 == 'Прямое геокодирование':
-        geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
-        response = requests.get(geocoder_request)
-        if response:
-            json_response = response.json()
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
-                "GeoObject"]
-            toponym_coodrinates = toponym["Point"]["pos"]
+        try:
+            geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
+            response = requests.get(geocoder_request)
+            if response:
+                json_response = response.json()
+                toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                    "GeoObject"]
+                toponym_coodrinates = toponym["Point"]["pos"]
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 message=f'Координаты - {toponym_coodrinates}. Что-то ещё?',
+                                 keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
+                                 random_id=random.randint(0, 2 ** 64))
+                asked1 = False
+        except Exception:
             vk.messages.send(user_id=event.obj.message['from_id'],
-                             message=f'Координаты - {toponym_coodrinates}. Что-то ещё?',
+                             message='Что-то не так с местом! Попробуйте ещё раз.',
                              keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
                              random_id=random.randint(0, 2 ** 64))
             asked1 = False
     elif asked1 == 'Обратное геокодирование':
-        try_catch = float(event.message.text.split()[0])
-        geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
-        response = requests.get(geocoder_request)
-        if response:
-            json_response = response.json()
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
-                "GeoObject"]
+        try:
+            try_catch = float(event.message.text.split()[0])
+            geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={event.message.text}&format=json"
+            response = requests.get(geocoder_request)
+            if response:
+                json_response = response.json()
+                toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                    "GeoObject"]
 
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 message=f'Место - {toponym["metaDataProperty"]["GeocoderMetaData"]["text"]}. Что-то ещё?',
+                                 keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
+                                 random_id=random.randint(0, 2 ** 64))
+                asked1 = False
+        except Exception:
             vk.messages.send(user_id=event.obj.message['from_id'],
-                             message=f'Место - {toponym["metaDataProperty"]["GeocoderMetaData"]["text"]}. Что-то ещё?',
+                             message='Что-то не так с координатами! Попробуйте ещё раз. Геокодирование:',
                              keyboard=open('kb4.json', 'r', encoding='UTF-8').read(),
                              random_id=random.randint(0, 2 ** 64))
             asked1 = False

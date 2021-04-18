@@ -54,45 +54,11 @@ def main():
                 asked_type = False
             # навыки:
             if event.message.text == 'Покажи место' or showing_place:
-                try:
-                    showing_place, asked, asked_type, city, in_menu = func_sp(event, asked, asked_type, city,
-                                                                              vk, showing_place, in_menu)
-                except Exception as a:
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     random_id=random.randint(0, 2 ** 64),
-                                     keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
-                                     message=f'Произошла ошибка. Вы находитесь в меню.')
-                    showing_place = False
-                    playing_cities = False
-                    geocoding = False
-                    guessing_city = False
-                    first_place = False
-                    in_menu = True
-                    lens = False
-                    city = None
-                    asked = False
-                    asked2 = False
-                    asked_type = False
+                showing_place, asked, asked_type, city, in_menu = func_sp(event, asked, asked_type, city,
+                                                                          vk, showing_place, in_menu)
 
             if event.message.text == 'Геокодер' or geocoding:
-                try:
-                    event, asked1, vk, geocoding, in_menu = func_gc(event, asked1, vk, geocoding, in_menu)
-                except Exception as a:
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     random_id=random.randint(0, 2 ** 64),
-                                     keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
-                                     message=f'Произошла ошибка. Вы находитесь в меню.')
-                    showing_place = False
-                    playing_cities = False
-                    geocoding = False
-                    guessing_city = False
-                    first_place = False
-                    in_menu = True
-                    lens = False
-                    city = None
-                    asked = False
-                    asked2 = False
-                    asked_type = False
+                event, asked1, vk, geocoding, in_menu = func_gc(event, asked1, vk, geocoding, in_menu)
             if event.message.text == 'Игра в города' or playing_cities:
                 try:
                     event, playing_cities, started, city_last, vk, in_menu, played_cities = func_pc(event, playing_cities, started, city_last, vk, in_menu, played_cities)
