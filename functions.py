@@ -4,7 +4,7 @@ import requests
 import vk_api
 
 
-def func_sp(event, asked, asked_type, city, vk, showing_place, in_menu):
+def func_showing_place(event, asked, asked_type, city, vk, showing_place, in_menu):
     if event.message.text == 'Покажи место':
         showing_place = True
         in_menu = False
@@ -65,7 +65,7 @@ def func_sp(event, asked, asked_type, city, vk, showing_place, in_menu):
             return showing_place, asked, asked_type, city, in_menu
 
 
-def func_pc(event, playing_cities, started, city_last, vk, in_menu, played_cities):
+def func_play_cities(event, playing_cities, started, city_last, vk, in_menu, played_cities):
     cities = open('cities.txt').read().split('\n')
     if event.message.text == 'Игра в города':
         city_last = None
@@ -120,7 +120,7 @@ def func_pc(event, playing_cities, started, city_last, vk, in_menu, played_citie
     return event, playing_cities, started, city_last, vk, in_menu, played_cities
 
 
-def func_gc(event, asked1, vk, geocoding, in_menu):
+def func_geocoder(event, asked1, vk, geocoding, in_menu):
     if event.message.text == 'Геокодер':
         geocoding = False
         in_menu = False
@@ -189,7 +189,7 @@ def func_gc(event, asked1, vk, geocoding, in_menu):
     return event, asked1, vk, geocoding, in_menu
 
 
-def func_pt(event, vk, lens, in_menu, first_place, renew):
+def func_distance(event, vk, lens, in_menu, first_place, renew):
     if event.message.text == 'Расстояния':
         lens = False
         in_menu = False
@@ -261,7 +261,7 @@ def func_pt(event, vk, lens, in_menu, first_place, renew):
     return event, vk, lens, in_menu, first_place, renew
 
 
-def func_gs(event, guessing_city, in_menu, asked2, vk, city_rand2):
+def func_guess_city(event, guessing_city, in_menu, asked2, vk, city_rand2):
     if event.message.text == 'Угадай город':
         guessing_city = True
         in_menu = False
