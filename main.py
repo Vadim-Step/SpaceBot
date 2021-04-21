@@ -16,6 +16,7 @@ def main():
     asked_type = False
     started = False
     renew = False
+    score = 0
     city_last = False
     in_menu = True
     city_rand2 = False
@@ -41,6 +42,7 @@ def main():
                 geocoding = False
                 guessing_city = False
                 first_place = False
+                score = 0
                 in_menu = True
                 lens = False
                 city = None
@@ -56,9 +58,9 @@ def main():
             if (event.message.text == 'zen' or event.message.text == 'пасхалка') and in_menu:
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message=random.choice(['У самурая нет цели, только путь...',
-                                                       'почему так...',
-                                                       'не теряем время, нужно решать задачи...']),
-                                 keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
+                                                        'почему так...',
+                                                        'не теряем время, нужно решать задачи...']),
+                                 keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
                                  random_id=random.randint(0, 2 ** 64))
 
             if event.message.text == 'Геокодер' or geocoding:
@@ -66,18 +68,19 @@ def main():
                                                                       in_menu)
             if event.message.text == 'Игра в города' or playing_cities:
                 try:
-                    event, playing_cities, started, city_last, vk, in_menu, played_cities = func_play_cities(
-                        event, playing_cities, started, city_last, vk, in_menu, played_cities)
-                except Exception as a:
+                    event, playing_cities, started, city_last, vk, in_menu, played_cities, score = func_play_cities(
+                        event, playing_cities, started, city_last, vk, in_menu, played_cities, score)
+                except Exception as err:
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      random_id=random.randint(0, 2 ** 64),
-                                     keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
+                                     keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
                                      message=f'Произошла ошибка. Вы находитесь в меню.')
                     showing_place = False
                     playing_cities = False
                     geocoding = False
                     guessing_city = False
                     first_place = False
+                    score = 0
                     in_menu = True
                     lens = False
                     city = None
@@ -85,37 +88,20 @@ def main():
                     asked2 = False
                     asked_type = False
             if event.message.text == 'Угадай город' or guessing_city:
-                try:
-                    event, guessing_city, in_menu, asked2, vk, city_rand2 = func_guess_city(event,
-                                                                                            guessing_city,
-                                                                                            in_menu,
-                                                                                            asked2, vk,
-                                                                                            city_rand2)
-                except Exception as a:
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     random_id=random.randint(0, 2 ** 64),
-                                     keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
-                                     message=f'Произошла ошибка. Вы находитесь в меню.')
-                    showing_place = False
-                    playing_cities = False
-                    geocoding = False
-                    guessing_city = False
-                    first_place = False
-                    in_menu = True
-                    lens = False
-                    city = None
-                    asked = False
-                    asked2 = False
-                    asked_type = False
+                event, guessing_city, in_menu, asked2, vk, city_rand2 = func_guess_city(event,
+                                                                                        guessing_city,
+                                                                                        in_menu,
+                                                                                        asked2, vk,
+                                                                                        city_rand2)
             if event.message.text == 'Расстояния' or lens:
                 try:
                     event, vk, lens, in_menu, first_place, renew = func_distance(event, vk, lens,
                                                                                  in_menu, first_place,
                                                                                  renew)
-                except Exception as a:
+                except Exception as err:
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      random_id=random.randint(0, 2 ** 64),
-                                     keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
+                                     keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
                                      message=f'Произошла ошибка. Вы находитесь в меню.')
                     showing_place = False
                     playing_cities = False
@@ -131,7 +117,7 @@ def main():
             if in_menu and not (event.message.text == 'zen' or event.message.text == 'пасхалка'):
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  random_id=random.randint(0, 2 ** 64),
-                                 keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
+                                 keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
                                  message=f'Я SpaceBot и у меня есть множество функций. Их всех ты сейчас видишь на клавиатуре.')
 
 

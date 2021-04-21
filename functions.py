@@ -1,6 +1,7 @@
 import random
 from distance import lonlat_distance
 import requests
+import database
 import vk_api
 
 
@@ -60,24 +61,32 @@ def func_showing_place(event, asked, asked_type, city, vk, showing_place, in_men
             city = event.message.text
             vk.messages.send(user_id=event.obj.message['from_id'],
                              message='Тип карты:',
-                             keyboard=open('kb1.json', 'r', encoding='UTF-8').read(),
+                             keyboard=open('kb2.json', 'r', encoding='UTF-8').read(),
                              random_id=random.randint(0, 2 ** 64))
             return showing_place, asked, asked_type, city, in_menu
 
 
-def func_play_cities(event, playing_cities, started, city_last, vk, in_menu, played_cities):
+def func_play_cities(event, playing_cities, started, city_last, vk, in_menu, played_cities, score):
     cities = open('cities.txt').read().split('\n')
     if event.message.text == 'Игра в города':
         city_last = None
         playing_cities = True
         started = False
         played_cities = []
+        data = database.getData(event.obj.message['from_id'])
+        num = 0
+        if data:
+            if data[0][3]:
+                num = data[0][3]
         vk.messages.send(user_id=event.obj.message['from_id'],
-                         message='Начинайте!',
+                         message=f'Начинайте! Ваш лучший счёт - {num}.',
                          keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                          random_id=random.randint(0, 2 ** 64))
-    if event.message.text in cities and event.message.text not in played_cities:
+        if not database.getData(event.obj.message['from_id']):
+            database.updateAll(None, event.obj.message['from_id'], None)
+    if event.message.text.capitalize() in cities and event.message.text.capitalize() not in played_cities:
         if not city_last or city_last[-1] == event.message.text.lower()[0]:
+            score += 1
             played_cities.append(event.message.text)
             last = event.message.text[-1]
             count = -1
@@ -117,7 +126,14 @@ def func_play_cities(event, playing_cities, started, city_last, vk, in_menu, pla
                          keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                          random_id=random.randint(0, 2 ** 64))
     in_menu = False
-    return event, playing_cities, started, city_last, vk, in_menu, played_cities
+    data = database.getData(event.obj.message['from_id'])
+    if data:
+        if data[0][3]:
+            if data[0][3] < score:
+                database.updatePlayCities(score, event.obj.message['from_id'])
+        else:
+            database.updatePlayCities(score, event.obj.message['from_id'])
+    return event, playing_cities, started, city_last, vk, in_menu, played_cities, score
 
 
 def func_geocoder(event, asked1, vk, geocoding, in_menu):
@@ -249,10 +265,8 @@ def func_distance(event, vk, lens, in_menu, first_place, renew):
                              random_id=random.randint(0, 2 ** 64))
             lens = True
             renew = False
-            print('gg')
         elif lens:
             first_place = event.message.text
-            print(first_place)
             vk.messages.send(user_id=event.obj.message['from_id'],
                              message='Введите второе место:',
                              keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
@@ -266,17 +280,32 @@ def func_guess_city(event, guessing_city, in_menu, asked2, vk, city_rand2):
         guessing_city = True
         in_menu = False
         asked2 = False
+        num = 0
+        data = database.getData(event.obj.message['from_id'])
+        if data:
+            if data[0][2]:
+                num = len(data[0][2].split())
         vk.messages.send(user_id=event.obj.message['from_id'],
-                         message='Игра "Угадай город". Ваша задача по картинке угадать город.',
+                         message=f'Игра "Угадай город". Ваша задача по картинке угадать город. Всего городов угадано: {num}.',
                          keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
                          random_id=random.randint(0, 2 ** 64))
+        if not database.getData(event.obj.message['from_id']):
+            database.updateAll(None, event.obj.message['from_id'], None)
     cities = open('cities2.txt', encoding='UTF-8').read().split('\n')
     if asked2:
-        if event.message.text == city_rand2:
+        if event.message.text.capitalize() == city_rand2:
             vk.messages.send(user_id=event.obj.message['from_id'],
                              random_id=random.randint(0, 2 ** 64),
                              message=f'Правильно!',
                              keyboard=open('kb3.json', 'r', encoding='UTF-8').read())
+            data = database.getData(event.obj.message['from_id'])
+            if data:
+                if data[0][2]:
+                    database.updateGuessedCities(city_rand2 + ' ' + data[0][2] + ' ',
+                                                 event.obj.message['from_id'])
+                else:
+                    database.updateGuessedCities(city_rand2 + ' ',
+                                                 event.obj.message['from_id'])
         else:
             vk.messages.send(user_id=event.obj.message['from_id'],
                              random_id=random.randint(0, 2 ** 64),
@@ -285,29 +314,39 @@ def func_guess_city(event, guessing_city, in_menu, asked2, vk, city_rand2):
         asked2 = False
     if not asked2:
         city_rand2 = random.choice(cities)
-        print(city_rand2)
-        geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={city_rand2}&format=json"
-        response = requests.get(geocoder_request)
-        if response:
-            json_response = response.json()
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
-                "GeoObject"]
-            toponym_coodrinates = toponym["Point"]["pos"]
-            map_request = f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}&spn=0.005,0.005&l=map"
-            response = requests.get(map_request)
-            map_file = "static/map.png"
-            with open(map_file, "wb") as file:
-                file.write(response.content)
-            upload = vk_api.VkUpload(vk)
-            photo = upload.photo_messages('static/map.png')
-            owner_id = photo[0]['owner_id']
-            photo_id = photo[0]['id']
-            access_key = photo[0]['access_key']
-            attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+        data = database.getData(event.obj.message['from_id'])
+        if not data or not data[0][2] or (data[0][2] and len(data[0][2].split()) < 12):
+            if data and data[0][2]:
+                while city_rand2 in data[0][2]:
+                    city_rand2 = random.choice(cities)
+            geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={city_rand2}&format=json"
+            response = requests.get(geocoder_request)
+            if response:
+                json_response = response.json()
+                toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+                    "GeoObject"]
+                toponym_coodrinates = toponym["Point"]["pos"]
+                map_request = f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}&spn=0.005,0.005&l=map"
+                response = requests.get(map_request)
+                map_file = "static/map.png"
+                with open(map_file, "wb") as file:
+                    file.write(response.content)
+                upload = vk_api.VkUpload(vk)
+                photo = upload.photo_messages('static/map.png')
+                owner_id = photo[0]['owner_id']
+                photo_id = photo[0]['id']
+                access_key = photo[0]['access_key']
+                attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 random_id=random.randint(0, 2 ** 64),
+                                 message=f'Какой это город?',
+                                 keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
+                                 attachment=attachment)
+                asked2 = True
+        else:
             vk.messages.send(user_id=event.obj.message['from_id'],
                              random_id=random.randint(0, 2 ** 64),
-                             message=f'Какой это город?',
-                             keyboard=open('kb3.json', 'r', encoding='UTF-8').read(),
-                             attachment=attachment)
-            asked2 = True
+                             message=f'Вы видели все города!',
+                             keyboard=open('kb3.json', 'r', encoding='UTF-8').read())
+
         return event, guessing_city, in_menu, asked2, vk, city_rand2

@@ -6,7 +6,7 @@
         "action": {
           "type": "text",
           "payload": "{\"button\": \"1\"}",
-          "label": "Покажи место"
+          "label": "map"
         },
         "color": "positive"
       },
@@ -14,35 +14,17 @@
         "action": {
           "type": "text",
           "payload": "{\"button\": \"2\"}",
-          "label": "Игра в города"
-        },
-        "color": "positive"
-      }
-    ],
-    [
-      {
-        "action": {
-          "type": "text",
-          "payload": "{\"button\": \"2\"}",
-          "label": "Геокодер"
+          "label": "sat"
         },
         "color": "positive"
       },
       {
         "action": {
           "type": "text",
-          "payload": "{\"button\": \"2\"}",
-          "label": "Угадай город"
+          "payload": "{\"button\": \"1\"}",
+          "label": "Выйти"
         },
-        "color": "positive"
-      },
-      {
-        "action": {
-          "type": "text",
-          "payload": "{\"button\": \"2\"}",
-          "label": "Расстояния"
-        },
-        "color": "positive"
+        "color": "negative"
       }
     ]
   ]
