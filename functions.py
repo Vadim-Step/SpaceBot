@@ -84,6 +84,8 @@ def func_play_cities(event, playing_cities, started, city_last, vk, in_menu, pla
                          random_id=random.randint(0, 2 ** 64))
         if not database.getData(event.obj.message['from_id']):
             database.updateAll(None, event.obj.message['from_id'], None)
+            response = vk.users.get(user_id=event.obj.message['from_id'])
+            database.updateName(event.obj.message['from_id'], response[0]['first_name'])
     if event.message.text.capitalize() in cities and event.message.text.capitalize() not in played_cities:
         if not city_last or city_last[-1] == event.message.text.lower()[0]:
             score += 1

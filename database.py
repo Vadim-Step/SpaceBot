@@ -56,5 +56,24 @@ def updateAll(play_cities, vk_id, guessed_cities):
     conn.close()
 
 
+def updateName(vk_id, name):
+    sql = """INSERT INTO users(vk_id, name) VALUES(?, ?)"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(sql, (vk_id, name,))
+    conn.commit()
+    conn.close()
+
+
+def getName():
+    sql = """SELECT * FROM users"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
+
 if __name__ == '__main__':
     pass

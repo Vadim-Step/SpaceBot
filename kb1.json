@@ -17,6 +17,14 @@
           "label": "Игра в города"
         },
         "color": "positive"
+      },
+      {
+        "action": {
+          "type": "text",
+          "payload": "{\"button\": \"2\"}",
+          "label": "Рейтинг"
+        },
+        "color": "positive"
       }
     ],
     [
